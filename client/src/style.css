@@ -1,0 +1,22 @@
+body {
+	margin: 0;
+}
+
+.alarm-list .alarm-state-OK {
+	background-color: green;
+	color: white;
+}
+
+.alarm-state-INSUFFICIENT_DATA {
+	background-color: yellow;
+	color: black;
+}
+
+.alarm-state-ALARM {
+	background-color: red;
+	color: white;
+}
+
+.metric-list img {
+	margin: 0;
+}
