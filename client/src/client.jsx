@@ -3,6 +3,8 @@ const Kefir = require("kefir")
 const {render} = require("react-dom")
 const U = require("karet.util")
 
+const REFRESH_INTERVAL = 60 * 1000
+
 require("./style.css")
 
 const App = () => {
@@ -15,11 +17,14 @@ const App = () => {
 }
 
 const MetricList = () => {
-  const metrics = get("/metrics").toProperty(() => [])
+  const metrics = refreshMs(REFRESH_INTERVAL)
+    .flatMap(() => get("/metrics"))
+    .toProperty()
   metrics.log("/metrics")
 
   return (
     <div className="metric-list">
+      <p>Metrics last updated {lastUpdated(metrics)}</p>
       {U.mapElems((metric, key) =>
         <Metric key={key} metric={metric} />, metrics)}
     </div>
@@ -36,12 +41,19 @@ const Metric = ({metric}) => {
 }
 
 const AlarmList = () => {
-  const alarms = get("/alarms").toProperty(() => [])
+  const alarms = refreshMs(REFRESH_INTERVAL)
+    .flatMap(() => get("/alarms"))
+    .toProperty()
   alarms.log("/alarms")
 
   return (
     <div className="alarm-list">
       <table>
+        <thead>
+          <tr>
+            <td colSpan={2}>Alarms last updated {lastUpdated(alarms)}</td>
+          </tr>
+        </thead>
         <tbody>
           {U.mapElems((alarm, key) =>
             <Alarm key={key} alarm={alarm} />, alarms)}
@@ -64,6 +76,12 @@ const Alarm = ({alarm}) => {
   )
 }
 
+const refreshMs = ms =>
+  Kefir.constant().delay(1000).concat(Kefir.interval(ms))
+
+const lastUpdated = stream =>
+  stream.map(() => formatTime(new Date())).toProperty()
+
 const apiBase = `${window.location.origin}/api`
 
 function get(path, options) {
@@ -75,6 +93,15 @@ function get(path, options) {
 
 function mkWidgetImageUrl(metric) {
   return `${apiBase}/metrics/widget?namespace=${encodeURIComponent(metric.Namespace)}&metric=${encodeURIComponent(metric.MetricName)}`
+}
+
+const dateTimeFormat = new Intl.DateTimeFormat("default", {
+  dateStyle: "medium",
+  timeStyle: "medium",
+})
+
+function formatTime(date) {
+  return dateTimeFormat.format(date)
 }
 
 render(<App />, document.getElementById("app"))
