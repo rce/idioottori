@@ -91,4 +91,7 @@ async function findHostedZone(domainName: string): Promise<Route53.HostedZone> {
 }
 
 
-main()
+main().catch(err => {
+  console.error(err)
+  process.exit(1)
+})
