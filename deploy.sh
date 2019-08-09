@@ -1,9 +1,25 @@
 #!/usr/bin/env bash
-set -o nounset -o errexit -o pipefail -o xtrace
+set -o nounset -o errexit -o pipefail
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-export AWS_PROFILE="discord-prod"
-export AWS_REGION="eu-west-1"
+function fail {
+	echo "$@" >&2
+	exit 1
+}
+
+function command_exists {
+	command -v "$@" >/dev/null 2>&1
+}
+
+[ -z "${AWS_PROFILE:-}" ] && fail "AWS_PROFILE should be set"
+[ -z "${AWS_REGION:-}" ] && fail "AWS_REGION should be set"
+
+command_exists npm || fail "npm is not installed"
+command_exists aws || fail "aws is not installed"
+
+aws sts get-caller-identity &>/dev/null || {
+  fail "Failed to get AWS caller identity. Is AWS profile $AWS_PROFILE valid?"
+}
 
 cd "$repo/deploy"
 npm install
