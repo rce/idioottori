@@ -4,16 +4,13 @@ Demo: https://radiator.prod.discord.rce.fi/
 
 ## Deployment
 
-The following command will deploy the radiator to AWS region `eu-west-1` using
-AWS profile/account `some-aws-profile`. The radiator will be accessible at
-`radiator.example.com`. The AWS account must have Route 53 hosted zone for
-`example.com`.
+The demo is deployed with the following command
 
 ```sh
-AWS_PROFILE=some-aws-profile \
+DOMAIN_NAME=prod.discord.rce.fi \
+AWS_PROFILE=discord-prod \
 AWS_REGION=eu-west-1 \
-DOMAIN_NAME=example.com \
-./deploy.sh
+bash ./deploy.sh
 ```
 
 The deployment script will notify you on missing dependencies
