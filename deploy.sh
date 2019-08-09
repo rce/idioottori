@@ -39,3 +39,7 @@ npm install
 npm run build
 cd "$repo/client/dist"
 aws s3 sync . s3://radiator.prod.discord.rce.fi/
+
+# Invalidate caches
+cd "$repo/deploy"
+npx ts-node bin/cloudfront-invalidation.ts
