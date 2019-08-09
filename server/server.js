@@ -58,13 +58,29 @@ async function getWidget(event) {
     start: "-PT48H",
     legend: { position: "hidden" },
     stat: "Average",
+    ...widgetDefinitionOverrides(q.namespace, q.metric),
   }
+
+  widgetDefinition.title = `${q.namespace} / ${q.metric} (${widgetDefinition.stat})`
 
   const widget = await CloudWatch.getMetricWidgetImage({
     MetricWidget: JSON.stringify(widgetDefinition),
   }).promise()
 
   return pngResponse(200, widget.MetricWidgetImage)
+}
+
+function widgetDefinitionOverrides(namespace, metric) {
+  const overrides = {
+    "General/discord-prod-bot-errors-logged": {
+      stat: "Sum",
+    },
+    "General/discord-prod-bot-errors-logged": {
+      stat: "Sum",
+    },
+  }
+
+  return overrides[`${namespace}/${metric}`] || {}
 }
 
 const corsHeaders = {
