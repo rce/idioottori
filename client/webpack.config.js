@@ -31,7 +31,7 @@ const localConfiguration = {
       context: ["/api"],
       secure: false,
       changeOrigin: true,
-      target: "https://d3swq5p7y61rsd.cloudfront.net",
+      target: `https://radiator.${process.env.DOMAIN_NAME}`,
     }],
   },
 }
