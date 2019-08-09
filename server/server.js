@@ -27,7 +27,8 @@ exports.handler = async event => {
 
 async function describeAlarms() {
   const response = await CloudWatch.describeAlarms().promise()
-  return jsonResponse(200, response.MetricAlarms)
+  return jsonResponse(200, response.MetricAlarms
+    .map(a => ({ ...a, AlarmName: stripPrefix(a.AlarmName) })))
 }
 
 async function listMetrics() {
@@ -61,7 +62,7 @@ async function getWidget(event) {
     ...widgetDefinitionOverrides(q.namespace, q.metric),
   }
 
-  widgetDefinition.title = `${q.namespace} / ${q.metric} (${widgetDefinition.stat})`
+  widgetDefinition.title = `${q.namespace} / ${stripPrefix(q.metric)} (${widgetDefinition.stat})`
 
   const widget = await CloudWatch.getMetricWidgetImage({
     MetricWidget: JSON.stringify(widgetDefinition),
@@ -81,6 +82,10 @@ function widgetDefinitionOverrides(namespace, metric) {
   }
 
   return overrides[`${namespace}/${metric}`] || {}
+}
+
+function stripPrefix(s) {
+  return s.replace(/^discord-prod-/, "")
 }
 
 const corsHeaders = {
