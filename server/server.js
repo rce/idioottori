@@ -27,8 +27,10 @@ exports.handler = async event => {
 
 async function describeAlarms() {
   const response = await CloudWatch.describeAlarms().promise()
-  return jsonResponse(200, response.MetricAlarms
-    .map(a => ({ ...a, AlarmName: stripPrefix(a.AlarmName) })))
+  const alarms = response.MetricAlarms
+    .map(a => ({ ...a, AlarmName: stripPrefix(a.AlarmName) }))
+  alarms.sort((a, b) => a.AlarmName.localeCompare(b.AlarmName))
+  return jsonResponse(200, alarms)
 }
 
 async function listMetrics() {
@@ -37,6 +39,7 @@ async function listMetrics() {
 
   const response = await CloudWatch.listMetrics().promise()
   const customMetrics = response.Metrics.filter(isCustomMetric)
+  customMetrics.sort((a, b) => a.MetricName.localeCompare(b.MetricName))
   return jsonResponse(200, customMetrics)
 }
 
