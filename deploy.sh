@@ -12,7 +12,11 @@ function command_exists {
 }
 
 [ -z "${DOMAIN_NAME:-}" ] && fail "DOMAIN_NAME should be set"
-[ -z "${AWS_PROFILE:-}" ] && fail "AWS_PROFILE should be set"
+if [ -z "${AWS_PROFILE:-}" ]; then
+  if [ -z "${AWS_ACCESS_KEY_ID:-}" ] || [ -z "${AWS_SECRET_ACCESS_KEY:-}" ]; then
+    fail "AWS_PROFILE (or AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY) should be set"
+  fi
+fi
 [ -z "${AWS_REGION:-}" ] && fail "AWS_REGION should be set"
 export AWS_DEFAULT_REGION=$AWS_REGION
 
