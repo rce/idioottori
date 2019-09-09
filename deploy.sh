@@ -28,7 +28,7 @@ aws sts get-caller-identity &>/dev/null || {
 }
 
 cd "$repo/deploy"
-npm install
+npm ci
 
 # Create and validate certificate "manually"
 npx ts-node bin/certificate.ts
