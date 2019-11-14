@@ -34,13 +34,12 @@ npm ci
 npx ts-node bin/certificate.ts
 
 # Build rest of the infra with CDK
-npm run build
-npm run cdk bootstrap
-npm run cdk deploy
+npx cdk bootstrap
+npx cdk deploy
 
 cd "$repo/client"
-npm install
-npm run build
+npm ci
+npx webpack --env production
 cd "$repo/client/dist"
 aws s3 sync . s3://radiator.prod.discord.rce.fi/
 

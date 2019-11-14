@@ -1,8 +1,4 @@
 {
-  "scripts": {
-    "build": "webpack --env production",
-    "local": "webpack-dev-server --env local"
-  },
   "author": "Henry Heikkinen <rce@rce.fi>",
   "license": "MIT",
   "devDependencies": {
