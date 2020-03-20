@@ -15,7 +15,7 @@
     "@aws-cdk/core": "1.30.0",
     "@types/node": "~10.14.17",
     "aws-cdk": "1.30.0",
-    "aws-sdk": "2.619.0",
+    "aws-sdk": "2.642.0",
     "ts-node": "8.6.2",
     "typescript": "3.6.2"
   },
