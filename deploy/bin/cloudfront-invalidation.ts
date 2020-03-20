@@ -4,6 +4,8 @@ const cloudfront = new CloudFront({
   apiVersion: "2019-03-26",
 })
 
+const pathsToInvalidate = ["/", "/index.html"]
+
 async function main() {
   const domainName = process.env.DOMAIN_NAME
   if (!domainName) throw new Error("Environment variable 'DOMAIN_NAME' is missing")
@@ -23,8 +25,8 @@ async function main() {
     InvalidationBatch: {
       CallerReference: "deployment" + Date.now(),
       Paths: {
-        Quantity: 1,
-        Items: ["/*"],
+        Quantity: pathsToInvalidate.length,
+        Items: pathsToInvalidate,
       },
     },
   }).promise()
