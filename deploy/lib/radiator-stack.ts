@@ -8,36 +8,32 @@ import cloudfront = require("@aws-cdk/aws-cloudfront")
 import route53 = require("@aws-cdk/aws-route53")
 import route53targets = require("@aws-cdk/aws-route53-targets")
 
-export interface RadiatorStackProps extends cdk.StackProps {
-  certificateArn: string
-  domainName: string
-}
-
 export class RadiatorStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props: RadiatorStackProps) {
+  constructor(scope: cdk.Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
 
-    const {domainName, certificateArn} = props
-    const radiatorDomain = `radiator.${domainName}`
+    const env = process.env.ENV!
+    const zoneName = `${env}.discord.rce.fi`
+    const radiatorDomain = `radiator.${zoneName}`
 
-    // Hosted zone and certificate have been created outside CloudFormation
-    const hostedZone = route53.HostedZone.fromLookup(this, "HostedZone", { domainName })
-    const certificate = certificatemanager.Certificate.fromCertificateArn(this, "Certificate", certificateArn)
-
-    const originAccessIdentity = new cloudfront.CfnCloudFrontOriginAccessIdentity(this, "CloudFrontS3OriginAccessIdentity", {
-      cloudFrontOriginAccessIdentityConfig: {
-        comment: "CloudFront Origin Access Identity for S3",
-      },
+    const hostedZone = new route53.HostedZone(this, "HostedZone", { zoneName })
+    const certificate = new certificatemanager.DnsValidatedCertificate(this, "Certificate", {
+      hostedZone,
+      domainName: radiatorDomain,
+      region: "us-east-1", // CloudFront requires certificate in us-east-1 region
     })
 
+    const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, "OriginAccessIdentity")
+
     const bucket = new s3.Bucket(this, `ClientBucket`, {
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
       bucketName: radiatorDomain,
     })
 
     // Allow CloudFront origin access identity to read from bucket
     bucket.addToResourcePolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
-      principals: [new iam.CanonicalUserPrincipal(originAccessIdentity.attrS3CanonicalUserId)],
+      principals: [originAccessIdentity.grantPrincipal],
       actions: ["s3:GetObject"],
       resources: [bucket.arnForObjects("*")],
     }))
@@ -45,7 +41,7 @@ export class RadiatorStack extends cdk.Stack {
     const serverLambda = new lambda.Function(this, "BackendFunction", {
       runtime: lambda.Runtime.NODEJS_10_X,
       handler: "server.handler",
-      code: lambda.Code.asset("../server"),
+      code: lambda.Code.fromAsset("../server"),
       initialPolicy: [
         new iam.PolicyStatement({
           effect: iam.Effect.ALLOW,
@@ -85,7 +81,6 @@ export class RadiatorStack extends cdk.Stack {
     widget.addMethod("GET")
     widget.addMethod("OPTIONS")
 
-
     const distribution = new cloudfront.CloudFrontWebDistribution(this, "CloudFrontDistribution", {
       aliasConfiguration: {
         names: [radiatorDomain],
@@ -95,7 +90,7 @@ export class RadiatorStack extends cdk.Stack {
         {
           s3OriginSource: {
             s3BucketSource: bucket,
-            originAccessIdentityId: originAccessIdentity.ref,
+            originAccessIdentity,
           },
           behaviors: [{
             isDefaultBehavior: true,
@@ -123,10 +118,11 @@ export class RadiatorStack extends cdk.Stack {
       ],
     })
 
+
     new route53.ARecord(this, "CloudFrontDnsARecord", {
       zone: hostedZone,
       recordName: radiatorDomain,
-      target: route53.AddressRecordTarget.fromAlias(
+      target: route53.RecordTarget.fromAlias(
         new route53targets.CloudFrontTarget(distribution)
       ),
     })

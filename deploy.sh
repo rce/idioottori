@@ -27,13 +27,9 @@ aws sts get-caller-identity &>/dev/null || {
   fail "Failed to get AWS caller identity. Is AWS profile $AWS_PROFILE valid?"
 }
 
+export ENV="prod"
 cd "$repo/deploy"
 npm ci
-
-# Create and validate certificate "manually"
-npx ts-node bin/certificate.ts
-
-# Build rest of the infra with CDK
 npx cdk bootstrap
 npx cdk deploy
 
@@ -41,7 +37,7 @@ cd "$repo/client"
 npm ci
 npx webpack --env production
 cd "$repo/client/dist"
-aws s3 sync . s3://radiator.prod.discord.rce.fi/
+aws s3 sync . s3://radiator.$ENV.discord.rce.fi/
 
 # Invalidate caches
 cd "$repo/deploy"
