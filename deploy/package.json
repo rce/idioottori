@@ -17,7 +17,7 @@
     "aws-cdk": "1.30.0",
     "aws-sdk": "2.654.0",
     "ts-node": "8.6.2",
-    "typescript": "3.6.2"
+    "typescript": "3.8.3"
   },
   "dependencies": {
     "source-map-support": "0.5.16"
