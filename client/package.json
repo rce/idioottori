@@ -2,7 +2,7 @@
   "author": "Henry Heikkinen <rce@rce.fi>",
   "license": "MIT",
   "devDependencies": {
-    "@babel/core": "7.13.14",
+    "@babel/core": "7.20.5",
     "@babel/preset-env": "7.13.12",
     "@babel/preset-react": "7.13.13",
     "babel-loader": "8.2.2",
